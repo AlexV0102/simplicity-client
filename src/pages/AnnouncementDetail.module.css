@@ -1,0 +1,79 @@
+.container {
+  width: 100%;
+  max-width: 800px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-gray-dark);
+  padding: 8px 0;
+  margin-bottom: 24px;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: var(--color-black);
+  text-decoration: underline;
+}
+
+.article {
+  background-color: var(--color-white);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: var(--color-black);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.metaItem {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.metaLabel {
+  font-weight: 600;
+  color: var(--color-gray-medium);
+}
+
+.content {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--color-gray-dark);
+  white-space: pre-wrap;
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--color-gray-medium);
+}
+
+.notFound {
+  text-align: center;
+  padding: 40px;
+}
+
+.notFound h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: var(--color-black);
+}
+
