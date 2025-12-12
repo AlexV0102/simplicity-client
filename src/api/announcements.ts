@@ -1,111 +1,196 @@
-import type { Announcement } from '../types/announcement';
+import { gql } from 'graphql-tag';
+import { apolloClient } from './client';
+import type {
+  Announcement,
+  AnnouncementsConnection,
+  DeleteResponse,
+  CreateAnnouncementInput,
+  UpdateAnnouncementInput,
+  AnnouncementsQueryVariables,
+} from './types';
 
-const mockAnnouncements: Announcement[] = [
-  {
-    id: '1',
-    title: 'Title 1',
-    publicationDate: 'Aug 11, 2023 04:38',
-    lastUpdate: 'Aug 11, 2023',
-    categories: ['City'],
-    content:
-      'Content for Title 1 announcement. This is a detailed description of the first announcement.',
-  },
-  {
-    id: '2',
-    title: 'Title 2',
-    publicationDate: 'Apr 19, 2023 05:14',
-    lastUpdate: 'Apr 19, 2023',
-    categories: ['City'],
-    content:
-      'Content for Title 2 announcement. This is a detailed description of the second announcement.',
-  },
-  {
-    id: '3',
-    title: 'Title 3',
-    publicationDate: 'Mar 24, 2023 07:27',
-    lastUpdate: 'Mar 24, 2023',
-    categories: ['City'],
-    content:
-      'Content for Title 3 announcement. This is a detailed description of the third announcement.',
-  },
-  {
-    id: '4',
-    title: 'Title 4',
-    publicationDate: 'Feb 15, 2023 09:45',
-    lastUpdate: 'Feb 15, 2023',
-    categories: ['City'],
-    content:
-      'Content for Title 4 announcement. This is a detailed description of the fourth announcement.',
-  },
-  {
-    id: '5',
-    title: 'Title 5',
-    publicationDate: 'Jan 08, 2023 11:20',
-    lastUpdate: 'Jan 08, 2023',
-    categories: ['City'],
-    content:
-      'Content for Title 5 announcement. This is a detailed description of the fifth announcement.',
-  },
-  {
-    id: '6',
-    title: 'Title 6',
-    publicationDate: 'Dec 20, 2022 14:30',
-    lastUpdate: 'Dec 20, 2022',
-    categories: ['City'],
-    content:
-      'Content for Title 6 announcement. This is a detailed description of the sixth announcement.',
-  },
-  {
-    id: '7',
-    title: 'Title 7',
-    publicationDate: 'Nov 12, 2022 16:15',
-    lastUpdate: 'Nov 12, 2022',
-    categories: ['City'],
-    content:
-      'Content for Title 7 announcement. This is a detailed description of the seventh announcement.',
-  },
-  {
-    id: '8',
-    title: 'Title 8',
-    publicationDate: 'Oct 05, 2022 08:50',
-    lastUpdate: 'Oct 05, 2022',
-    categories: ['City', 'Health'],
-    content:
-      'Content for Title 8 announcement. This is a detailed description of the eighth announcement.',
-  },
-  {
-    id: '9',
-    title: 'Title 9',
-    publicationDate: 'Sep 18, 2022 10:25',
-    lastUpdate: 'Sep 18, 2022',
-    categories: ['City', 'Health'],
-    content:
-      'Content for Title 9 announcement. This is a detailed description of the ninth announcement.',
-  },
-  {
-    id: '10',
-    title: 'Title 10',
-    publicationDate: 'Aug 30, 2022 13:40',
-    lastUpdate: 'Aug 30, 2022',
-    categories: ['City', 'Health'],
-    content:
-      'Content for Title 10 announcement. This is a detailed description of the tenth announcement.',
-  },
-];
+export const ANNOUNCEMENTS_QUERY = gql`
+  query Announcements($limit: Int, $lastKey: String) {
+    announcements(limit: $limit, lastKey: $lastKey) {
+      items {
+        id
+        title
+        createdAt
+        updatedAt
+        categories
+      }
+      lastKey
+      hasMore
+    }
+  }
+`;
 
-export const getAnnouncements = async (): Promise<Announcement[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve([...mockAnnouncements]);
-    }, 100);
+export const ANNOUNCEMENT_QUERY = gql`
+  query Announcement($id: ID!) {
+    announcement(id: $id) {
+      id
+      title
+      createdAt
+      updatedAt
+      categories
+      content
+    }
+  }
+`;
+
+export const CREATE_ANNOUNCEMENT_MUTATION = gql`
+  mutation CreateAnnouncement($title: String!, $categories: [String!]!, $content: String) {
+    createAnnouncement(title: $title, categories: $categories, content: $content) {
+      id
+      title
+      createdAt
+      updatedAt
+      categories
+      content
+    }
+  }
+`;
+
+export const UPDATE_ANNOUNCEMENT_MUTATION = gql`
+  mutation UpdateAnnouncement($id: ID!, $title: String, $categories: [String!], $content: String) {
+    updateAnnouncement(id: $id, title: $title, categories: $categories, content: $content) {
+      id
+      title
+      createdAt
+      updatedAt
+      categories
+      content
+    }
+  }
+`;
+
+export const DELETE_ANNOUNCEMENT_MUTATION = gql`
+  mutation DeleteAnnouncement($id: ID!) {
+    deleteAnnouncement(id: $id) {
+      success
+    }
+  }
+`;
+
+export type AnnouncementsQueryResult = {
+  announcements: AnnouncementsConnection;
+};
+
+export type AnnouncementQueryResult = {
+  announcement: Announcement | null;
+};
+
+export type CreateAnnouncementMutationResult = {
+  createAnnouncement: Announcement;
+};
+
+export type UpdateAnnouncementMutationResult = {
+  updateAnnouncement: Announcement;
+};
+
+export type DeleteAnnouncementMutationResult = {
+  deleteAnnouncement: DeleteResponse;
+};
+
+export const getAnnouncements = async (
+  variables?: AnnouncementsQueryVariables,
+): Promise<AnnouncementsConnection> => {
+  const { data, error } = await apolloClient.query<AnnouncementsQueryResult>({
+    query: ANNOUNCEMENTS_QUERY,
+    variables: {
+      limit: variables?.limit ?? 20,
+      lastKey: variables?.lastKey ?? null,
+    },
+    fetchPolicy: 'network-only',
   });
+
+  if (error) {
+    throw new Error(`Failed to fetch announcements: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error('Failed to fetch announcements: No data returned');
+  }
+
+  return data.announcements;
 };
 
 export const getAnnouncementById = async (id: string): Promise<Announcement | null> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const announcement = mockAnnouncements.find((a) => a.id === id);
-      resolve(announcement || null);
-    }, 100);
+  const { data, error } = await apolloClient.query<AnnouncementQueryResult>({
+    query: ANNOUNCEMENT_QUERY,
+    variables: { id },
+    fetchPolicy: 'network-only',
   });
+
+  if (error) {
+    throw new Error(`Failed to fetch announcement: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error('Failed to fetch announcement: No data returned');
+  }
+
+  return data.announcement;
+};
+
+export const createAnnouncement = async (input: CreateAnnouncementInput): Promise<Announcement> => {
+  const result = await apolloClient.mutate<CreateAnnouncementMutationResult>({
+    mutation: CREATE_ANNOUNCEMENT_MUTATION,
+    variables: input,
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+
+  if (!result.data) {
+    throw new Error('Failed to create announcement: No data returned');
+  }
+
+  apolloClient.cache.evict({ fieldName: 'announcements' });
+  apolloClient.cache.gc();
+
+  return result.data.createAnnouncement;
+};
+
+export const updateAnnouncement = async (input: UpdateAnnouncementInput): Promise<Announcement> => {
+  const result = await apolloClient.mutate<UpdateAnnouncementMutationResult>({
+    mutation: UPDATE_ANNOUNCEMENT_MUTATION,
+    variables: input,
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+
+  if (!result.data) {
+    throw new Error('Failed to update announcement: No data returned');
+  }
+
+  await apolloClient.cache.evict({ fieldName: 'announcements' });
+  await apolloClient.cache.evict({ id: `Announcement:${input.id}` });
+  await apolloClient.cache.gc();
+
+  return result.data.updateAnnouncement;
+};
+
+export const deleteAnnouncement = async (id: string): Promise<boolean> => {
+  const result = await apolloClient.mutate<DeleteAnnouncementMutationResult>({
+    mutation: DELETE_ANNOUNCEMENT_MUTATION,
+    variables: { id },
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+
+  if (!result.data) {
+    throw new Error('Failed to delete announcement: No data returned');
+  }
+
+  await apolloClient.cache.evict({ fieldName: 'announcements' });
+  await apolloClient.cache.evict({ id: `Announcement:${id}` });
+  await apolloClient.cache.gc();
+
+  return result.data.deleteAnnouncement.success;
 };

@@ -1,8 +1,10 @@
+export type DateTime = string;
+
 export type Announcement = {
   id: string;
   title: string;
-  publicationDate: string;
-  lastUpdate: string;
+  createdAt: DateTime;
+  updatedAt: DateTime;
   categories: string[];
   content?: string;
 };

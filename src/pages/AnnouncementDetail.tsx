@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { getAnnouncementById } from '../api/announcements';
 import type { Announcement } from '../types/announcement';
+import { formatDateTime, formatDateTimeShort } from '../lib/date';
 import styles from './AnnouncementDetail.module.css';
 
 export default function AnnouncementDetail() {
@@ -57,22 +58,19 @@ export default function AnnouncementDetail() {
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Publication date:</span>
-            <span>{announcement.publicationDate}</span>
+            <span>{formatDateTime(announcement.createdAt)}</span>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Last update:</span>
-            <span>{announcement.lastUpdate}</span>
+            <span>{formatDateTimeShort(announcement.updatedAt)}</span>
           </div>
           <div className={styles.metaItem}>
             <span className={styles.metaLabel}>Categories:</span>
             <span>{announcement.categories.join(', ')}</span>
           </div>
         </div>
-        <div className={styles.content}>
-          {announcement.content || 'No content available.'}
-        </div>
+        {announcement.content && <div className={styles.content}>{announcement.content}</div>}
       </article>
     </div>
   );
 }
-

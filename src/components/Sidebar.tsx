@@ -23,6 +23,11 @@ export default function Sidebar() {
           <span className={styles.label}>Announcements</span>
         </Link>
       </nav>
+      <div className={styles.createButtonContainer}>
+        <Link to="/announcements/new" className={styles.createButton}>
+          Create Announcement
+        </Link>
+      </div>
     </aside>
   );
 }

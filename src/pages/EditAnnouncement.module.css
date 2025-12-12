@@ -1,0 +1,237 @@
+.container {
+  width: 100%;
+  max-width: 800px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 32px;
+  color: var(--color-black);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-black);
+}
+
+.helperText {
+  font-size: 14px;
+  color: var(--color-gray-medium);
+  margin: 0;
+}
+
+.input,
+.textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-black);
+  background-color: var(--color-white);
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-black);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.categoryContainer {
+  position: relative;
+}
+
+.categoryInputWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 40px 8px 8px;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 6px;
+  min-height: 44px;
+  align-items: center;
+  background-color: var(--color-white);
+  position: relative;
+}
+
+.categoryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.categoryTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: var(--color-gray-bg);
+  border-radius: 4px;
+  font-size: 14px;
+  color: var(--color-black);
+}
+
+.categoryRemove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--color-gray-medium);
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.categoryRemove:hover {
+  color: var(--color-black);
+}
+
+.categoryInputContainer {
+  flex: 1;
+  min-width: 120px;
+  position: relative;
+}
+
+.categoryInput {
+  width: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  font-size: 14px;
+}
+
+.categoryInput:focus {
+  outline: none;
+  border: none;
+}
+
+.categoryDropdownButton {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-gray-medium);
+  padding: 4px;
+}
+
+.categoryDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-light);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.categoryOption {
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-black);
+  transition: background-color 0.2s;
+}
+
+.categoryOption:hover {
+  background-color: var(--color-gray-bg);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.cancelButton {
+  padding: 12px 24px;
+  background: none;
+  border: 1px solid var(--color-gray-light);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-black);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cancelButton:hover {
+  background-color: var(--color-gray-bg);
+}
+
+.publishButton {
+  padding: 12px 24px;
+  background-color: #ff9800;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-white);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.publishButton:hover:not(:disabled) {
+  background-color: #f57c00;
+}
+
+.publishButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  padding: 12px 16px;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  color: #c62828;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.loading {
+  padding: 40px;
+  text-align: center;
+  font-size: 16px;
+  color: var(--color-gray-medium);
+}
+

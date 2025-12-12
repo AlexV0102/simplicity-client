@@ -66,3 +66,25 @@
   color: var(--color-gray-medium);
 }
 
+.error {
+  padding: 40px;
+  text-align: center;
+}
+
+.error h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: var(--color-red);
+}
+
+.error p {
+  font-size: 16px;
+  color: var(--color-gray-dark);
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-gray-medium);
+  font-style: italic;
+}
