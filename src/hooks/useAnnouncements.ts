@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { getAnnouncements } from '../api/announcements';
 import type { Announcement } from '../types/announcement';
 
@@ -8,50 +8,86 @@ export function useAnnouncements() {
   const [error, setError] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchTextRef = useRef(searchText);
+  const categoriesRef = useRef(selectedCategories);
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getAnnouncements({
-          categories: selectedCategories.length > 0 ? selectedCategories : undefined,
-          searchText: searchText.trim() || undefined,
-        });
-        setAnnouncements(data.items);
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to fetch announcements';
-        setError(message);
-        console.error('Failed to fetch announcements:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    searchTextRef.current = searchText;
+  }, [searchText]);
 
-    const timeoutId = setTimeout(() => {
-      fetchAnnouncements();
+  useEffect(() => {
+    categoriesRef.current = selectedCategories;
+  }, [selectedCategories]);
+
+  const loadAnnouncements = useCallback(async (search: string, categories: string[]) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getAnnouncements({
+        categories: categories.length > 0 ? categories : undefined,
+        searchText: search.trim() || undefined,
+      });
+      setAnnouncements(data.items);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to fetch announcements';
+      setError(message);
+      console.error('Failed to fetch announcements:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAnnouncements('', []);
+  }, [loadAnnouncements]);
+
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      loadAnnouncements(searchTextRef.current, categoriesRef.current);
     }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [searchText, selectedCategories]);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [searchText, selectedCategories, loadAnnouncements]);
 
-  const handleCategoryToggle = (category: string) => {
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchText(value);
+  }, []);
+
+  const handleSearchBlur = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    loadAnnouncements(searchTextRef.current, categoriesRef.current);
+  }, [loadAnnouncements]);
+
+  const handleCategoryToggle = useCallback((category: string) => {
     setSelectedCategories((prev) =>
       prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
     );
-  };
+  }, []);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSearchText('');
     setSelectedCategories([]);
-  };
+  }, []);
 
   return {
     announcements,
     loading,
     error,
     searchText,
-    setSearchText,
+    handleSearchChange,
+    handleSearchBlur,
     selectedCategories,
     handleCategoryToggle,
     handleClearFilters,

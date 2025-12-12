@@ -1,10 +1,13 @@
+import { useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router';
-import { flexRender, type ColumnDef } from '@tanstack/react-table';
+import type { ColumnDef } from '@tanstack/react-table';
 import type { Announcement } from '../types/announcement';
 import { formatDateTime, formatDateTimeShort } from '../lib/date';
 import { AVAILABLE_CATEGORIES } from '../config/categories';
 import { useAnnouncements } from '../hooks/useAnnouncements';
 import { useAnnouncementsTable } from '../hooks/useAnnouncementsTable';
+import AnnouncementsTable from '../components/AnnouncementsTable';
+import AnnouncementsPagination from '../components/AnnouncementsPagination';
 import Icon from '../components/Icon';
 import styles from './AnnouncementsList.module.css';
 
@@ -15,59 +18,71 @@ export default function AnnouncementsList() {
     loading,
     error,
     searchText,
-    setSearchText,
+    handleSearchChange,
+    handleSearchBlur,
     selectedCategories,
     handleCategoryToggle,
     handleClearFilters,
   } = useAnnouncements();
 
-  const columns: ColumnDef<Announcement>[] = [
-    {
-      accessorKey: 'title',
-      header: 'Title',
-      cell: (info) => info.getValue(),
+  const handleRowClick = useCallback(
+    (id: string) => {
+      navigate(`/announcements/${id}`);
     },
-    {
-      accessorKey: 'createdAt',
-      header: 'Publication date',
-      cell: (info) => formatDateTime(info.getValue() as string),
+    [navigate],
+  );
+
+  const handleEditClick = useCallback(
+    (id: string, e: React.MouseEvent) => {
+      e.stopPropagation();
+      navigate(`/announcements/${id}/edit`);
     },
-    {
-      accessorKey: 'updatedAt',
-      header: 'Last update',
-      cell: (info) => formatDateTimeShort(info.getValue() as string),
-    },
-    {
-      accessorKey: 'categories',
-      header: 'Categories',
-      cell: (info) => (info.getValue() as string[]).join(', '),
-    },
-    {
-      id: 'actions',
-      header: '',
-      cell: (info) => {
-        const announcement = info.row.original;
-        return (
-          <button
-            className={styles.editButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/announcements/${announcement.id}/edit`);
-            }}
-            aria-label="Edit"
-          >
-            <Icon name="edit" alt="Edit" />
-          </button>
-        );
+    [navigate],
+  );
+
+  const columns = useMemo<ColumnDef<Announcement>[]>(
+    () => [
+      {
+        accessorKey: 'title',
+        header: 'Title',
+        cell: (info) => info.getValue(),
       },
-    },
-  ];
+      {
+        accessorKey: 'createdAt',
+        header: 'Publication date',
+        cell: (info) => formatDateTime(info.getValue() as string),
+      },
+      {
+        accessorKey: 'updatedAt',
+        header: 'Last update',
+        cell: (info) => formatDateTimeShort(info.getValue() as string),
+      },
+      {
+        accessorKey: 'categories',
+        header: 'Categories',
+        cell: (info) => (info.getValue() as string[]).join(', '),
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: (info) => {
+          const announcement = info.row.original;
+          return (
+            <button
+              className={styles.editButton}
+              onClick={(e) => handleEditClick(announcement.id, e)}
+              aria-label="Edit"
+            >
+              <Icon name="edit" alt="Edit" />
+            </button>
+          );
+        },
+      },
+    ],
+    [handleEditClick],
+  );
 
   const table = useAnnouncementsTable(announcements, columns, searchText, selectedCategories);
-
-  const handleRowClick = (id: string) => {
-    navigate(`/announcements/${id}`);
-  };
 
   if (loading) {
     return <div className={styles.loading}>Loading...</div>;
@@ -93,7 +108,8 @@ export default function AnnouncementsList() {
             type="text"
             placeholder="Search in title and content..."
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            onBlur={handleSearchBlur}
             className={styles.searchInput}
           />
         </div>
@@ -118,94 +134,8 @@ export default function AnnouncementsList() {
           </button>
         )}
       </div>
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th key={header.id} className={styles.th}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length} className={styles.empty}>
-                  No announcements found
-                </td>
-              </tr>
-            ) : (
-              table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  onClick={() => handleRowClick(row.original.id)}
-                  className={styles.tableRow}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className={styles.td}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      {announcements.length > 0 && (
-        <div className={styles.pagination}>
-          <button
-            onClick={() => table.setPageIndex(0)}
-            disabled={!table.getCanPreviousPage()}
-            className={styles.pageButton}
-          >
-            {'<<'}
-          </button>
-          <button
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-            className={styles.pageButton}
-          >
-            {'<'}
-          </button>
-          <span className={styles.pageInfo}>
-            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-          </span>
-          <button
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-            className={styles.pageButton}
-          >
-            {'>'}
-          </button>
-          <button
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-            disabled={!table.getCanNextPage()}
-            className={styles.pageButton}
-          >
-            {'>>'}
-          </button>
-          <select
-            value={table.getState().pagination.pageSize}
-            onChange={(e) => {
-              table.setPageSize(Number(e.target.value));
-            }}
-            className={styles.pageSizeSelect}
-          >
-            {[10, 20, 30, 50].map((pageSize) => (
-              <option key={pageSize} value={pageSize}>
-                Show {pageSize}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <AnnouncementsTable table={table} columns={columns} onRowClick={handleRowClick} />
+      {announcements.length > 0 && <AnnouncementsPagination table={table} />}
     </div>
   );
 }

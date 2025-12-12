@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,6 +14,8 @@ export function useAnnouncementsTable(
   searchText: string,
   selectedCategories: string[],
 ) {
+  const prevFiltersRef = useRef({ searchText, selectedCategories: selectedCategories.join(',') });
+
   const table = useReactTable({
     data,
     columns,
@@ -29,7 +31,16 @@ export function useAnnouncementsTable(
   });
 
   useEffect(() => {
-    table.setPageIndex(0);
+    const currentFilters = { searchText, selectedCategories: selectedCategories.join(',') };
+    const prevFilters = prevFiltersRef.current;
+
+    if (
+      currentFilters.searchText !== prevFilters.searchText ||
+      currentFilters.selectedCategories !== prevFilters.selectedCategories
+    ) {
+      table.setPageIndex(0);
+      prevFiltersRef.current = currentFilters;
+    }
   }, [searchText, selectedCategories, table]);
 
   return table;
