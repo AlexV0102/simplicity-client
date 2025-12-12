@@ -58,8 +58,8 @@ export const CREATE_ANNOUNCEMENT_MUTATION = gql`
 `;
 
 export const UPDATE_ANNOUNCEMENT_MUTATION = gql`
-  mutation UpdateAnnouncement($id: ID!, $title: String, $categories: [String!], $content: String) {
-    updateAnnouncement(id: $id, title: $title, categories: $categories, content: $content) {
+  mutation UpdateAnnouncement($id: ID!, $input: UpdateAnnouncementInput!) {
+    updateAnnouncement(id: $id, input: $input) {
       id
       title
       createdAt
@@ -179,9 +179,13 @@ export const createAnnouncement = async (input: CreateAnnouncementInput): Promis
 
 export const updateAnnouncement = async (input: UpdateAnnouncementInput): Promise<Announcement> => {
   try {
+    const { id, ...inputData } = input;
     const result = await apolloClient.mutate<UpdateAnnouncementMutationResult>({
       mutation: UPDATE_ANNOUNCEMENT_MUTATION,
-      variables: input,
+      variables: {
+        id,
+        input: inputData,
+      },
     });
 
     if (!result.data) {
@@ -189,7 +193,7 @@ export const updateAnnouncement = async (input: UpdateAnnouncementInput): Promis
     }
 
     apolloClient.cache.evict({ fieldName: 'announcements' });
-    apolloClient.cache.evict({ id: `Announcement:${input.id}` });
+    apolloClient.cache.evict({ id: `Announcement:${id}` });
     apolloClient.cache.gc();
 
     return result.data.updateAnnouncement;

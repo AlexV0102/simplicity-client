@@ -5,19 +5,14 @@ import styles from './AnnouncementsTable.module.css';
 interface AnnouncementsTableProps {
   table: Table<Announcement>;
   columns: ColumnDef<Announcement>[];
-  onRowClick: (id: string) => void;
 }
 
-export default function AnnouncementsTable({
-  table,
-  columns,
-  onRowClick,
-}: AnnouncementsTableProps) {
+export default function AnnouncementsTable({ table, columns }: AnnouncementsTableProps) {
   return (
     <div className={styles.tableWrapper}>
       <table className={styles.table}>
         <TableHeader table={table} />
-        <TableBody table={table} columns={columns} onRowClick={onRowClick} />
+        <TableBody table={table} columns={columns} />
       </table>
     </div>
   );
@@ -44,11 +39,9 @@ function TableHeader({ table }: { table: Table<Announcement> }) {
 function TableBody({
   table,
   columns,
-  onRowClick,
 }: {
   table: Table<Announcement>;
   columns: ColumnDef<Announcement>[];
-  onRowClick: (id: string) => void;
 }) {
   const rows = table.getRowModel().rows;
 
@@ -67,21 +60,15 @@ function TableBody({
   return (
     <tbody>
       {rows.map((row) => (
-        <TableRow key={row.id} row={row} onRowClick={onRowClick} />
+        <TableRow key={row.id} row={row} />
       ))}
     </tbody>
   );
 }
 
-function TableRow({
-  row,
-  onRowClick,
-}: {
-  row: ReturnType<Table<Announcement>['getRowModel']>['rows'][0];
-  onRowClick: (id: string) => void;
-}) {
+function TableRow({ row }: { row: ReturnType<Table<Announcement>['getRowModel']>['rows'][0] }) {
   return (
-    <tr onClick={() => onRowClick(row.original.id)} className={styles.tableRow}>
+    <tr className={styles.tableRow}>
       {row.getVisibleCells().map((cell) => (
         <td key={cell.id} className={styles.td}>
           {flexRender(cell.column.columnDef.cell, cell.getContext())}

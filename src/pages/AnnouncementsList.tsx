@@ -25,16 +25,8 @@ export default function AnnouncementsList() {
     handleClearFilters,
   } = useAnnouncements();
 
-  const handleRowClick = useCallback(
-    (id: string) => {
-      navigate(`/announcements/${id}`);
-    },
-    [navigate],
-  );
-
   const handleEditClick = useCallback(
-    (id: string, e: React.MouseEvent) => {
-      e.stopPropagation();
+    (id: string) => {
       navigate(`/announcements/${id}/edit`);
     },
     [navigate],
@@ -70,7 +62,7 @@ export default function AnnouncementsList() {
           return (
             <button
               className={styles.editButton}
-              onClick={(e) => handleEditClick(announcement.id, e)}
+              onClick={() => handleEditClick(announcement.id)}
               aria-label="Edit"
             >
               <Icon name="edit" alt="Edit" />
@@ -134,7 +126,7 @@ export default function AnnouncementsList() {
           </button>
         )}
       </div>
-      <AnnouncementsTable table={table} columns={columns} onRowClick={handleRowClick} />
+      <AnnouncementsTable table={table} columns={columns} />
       {announcements.length > 0 && <AnnouncementsPagination table={table} />}
     </div>
   );
