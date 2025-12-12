@@ -1,34 +1,12 @@
-import { ApolloClient, InMemoryCache, HttpLink, from } from '@apollo/client';
-import { onError } from '@apollo/client/link/error';
-import type { GraphQLError } from 'graphql';
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { env } from '../config/env';
 
 const httpLink = new HttpLink({
   uri: env.graphqlEndpoint,
 });
 
-const errorLink = onError((errorResponse) => {
-  const graphQLErrors = (errorResponse as { graphQLErrors?: readonly GraphQLError[] })
-    .graphQLErrors;
-  const networkError = (errorResponse as { networkError?: Error }).networkError;
-
-  if (graphQLErrors) {
-    graphQLErrors.forEach((error: GraphQLError) => {
-      console.error(
-        `GraphQL error: Message: ${error.message}, Location: ${error.locations
-          ?.map((loc) => `${loc.line}:${loc.column}`)
-          .join(', ')}, Path: ${error.path?.join('.')}`,
-      );
-    });
-  }
-
-  if (networkError) {
-    console.error(`Network error: ${networkError.message}`);
-  }
-});
-
 export const apolloClient = new ApolloClient({
-  link: from([errorLink, httpLink]),
+  link: httpLink,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {

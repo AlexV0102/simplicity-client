@@ -35,6 +35,8 @@ export type UpdateAnnouncementInput = {
 export type AnnouncementsQueryVariables = {
   limit?: number;
   lastKey?: string | null;
+  categories?: string[];
+  searchText?: string;
 };
 
 export type AnnouncementQueryVariables = {

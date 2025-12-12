@@ -1,9 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { getAnnouncementById, createAnnouncement, updateAnnouncement } from '../api/announcements';
+import { AVAILABLE_CATEGORIES } from '../config/categories';
 import styles from './EditAnnouncement.module.css';
-
-const AVAILABLE_CATEGORIES = ['City', 'Health', 'Community events', 'Education', 'Transportation'];
 
 export default function EditAnnouncement() {
   const { id } = useParams<{ id: string }>();

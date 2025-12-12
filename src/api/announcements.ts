@@ -10,14 +10,20 @@ import type {
 } from './types';
 
 export const ANNOUNCEMENTS_QUERY = gql`
-  query Announcements($limit: Int, $lastKey: String) {
-    announcements(limit: $limit, lastKey: $lastKey) {
+  query Announcements($limit: Int, $lastKey: String, $categories: [String!], $searchText: String) {
+    announcements(
+      limit: $limit
+      lastKey: $lastKey
+      categories: $categories
+      searchText: $searchText
+    ) {
       items {
         id
         title
         createdAt
         updatedAt
         categories
+        content
       }
       lastKey
       hasMore
@@ -95,102 +101,128 @@ export type DeleteAnnouncementMutationResult = {
 export const getAnnouncements = async (
   variables?: AnnouncementsQueryVariables,
 ): Promise<AnnouncementsConnection> => {
-  const { data, error } = await apolloClient.query<AnnouncementsQueryResult>({
-    query: ANNOUNCEMENTS_QUERY,
-    variables: {
-      limit: variables?.limit ?? 20,
-      lastKey: variables?.lastKey ?? null,
-    },
-    fetchPolicy: 'network-only',
-  });
+  try {
+    const { data } = await apolloClient.query<AnnouncementsQueryResult>({
+      query: ANNOUNCEMENTS_QUERY,
+      variables: {
+        limit: variables?.limit ?? 20,
+        lastKey: variables?.lastKey ?? null,
+        categories:
+          variables?.categories && variables.categories.length > 0
+            ? variables.categories
+            : undefined,
+        searchText:
+          variables?.searchText && variables.searchText.trim() !== ''
+            ? variables.searchText.trim()
+            : undefined,
+      },
+      fetchPolicy: 'network-only',
+    });
 
-  if (error) {
-    throw new Error(`Failed to fetch announcements: ${error.message}`);
+    if (!data) {
+      throw new Error('Failed to fetch announcements: No data returned');
+    }
+
+    return data.announcements;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch announcements: ${error.message}`);
+    }
+    throw new Error('Failed to fetch announcements: Unknown error');
   }
-
-  if (!data) {
-    throw new Error('Failed to fetch announcements: No data returned');
-  }
-
-  return data.announcements;
 };
 
 export const getAnnouncementById = async (id: string): Promise<Announcement | null> => {
-  const { data, error } = await apolloClient.query<AnnouncementQueryResult>({
-    query: ANNOUNCEMENT_QUERY,
-    variables: { id },
-    fetchPolicy: 'network-only',
-  });
+  try {
+    const { data } = await apolloClient.query<AnnouncementQueryResult>({
+      query: ANNOUNCEMENT_QUERY,
+      variables: { id },
+      fetchPolicy: 'network-only',
+    });
 
-  if (error) {
-    throw new Error(`Failed to fetch announcement: ${error.message}`);
+    if (!data) {
+      throw new Error('Failed to fetch announcement: No data returned');
+    }
+
+    return data.announcement;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to fetch announcement: ${error.message}`);
+    }
+    throw new Error('Failed to fetch announcement: Unknown error');
   }
-
-  if (!data) {
-    throw new Error('Failed to fetch announcement: No data returned');
-  }
-
-  return data.announcement;
 };
 
 export const createAnnouncement = async (input: CreateAnnouncementInput): Promise<Announcement> => {
-  const result = await apolloClient.mutate<CreateAnnouncementMutationResult>({
-    mutation: CREATE_ANNOUNCEMENT_MUTATION,
-    variables: input,
-  });
+  try {
+    const result = await apolloClient.mutate<CreateAnnouncementMutationResult>({
+      mutation: CREATE_ANNOUNCEMENT_MUTATION,
+      variables: input,
+    });
 
-  if (result.error) {
-    throw new Error(result.error.message);
+    if (!result.data) {
+      throw new Error('Failed to create announcement: No data returned');
+    }
+
+    apolloClient.cache.evict({ fieldName: 'announcements' });
+    apolloClient.cache.gc();
+
+    return result.data.createAnnouncement;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Failed to create announcement:', error.message);
+      throw error;
+    }
+    throw new Error('Failed to create announcement: Unknown error');
   }
-
-  if (!result.data) {
-    throw new Error('Failed to create announcement: No data returned');
-  }
-
-  apolloClient.cache.evict({ fieldName: 'announcements' });
-  apolloClient.cache.gc();
-
-  return result.data.createAnnouncement;
 };
 
 export const updateAnnouncement = async (input: UpdateAnnouncementInput): Promise<Announcement> => {
-  const result = await apolloClient.mutate<UpdateAnnouncementMutationResult>({
-    mutation: UPDATE_ANNOUNCEMENT_MUTATION,
-    variables: input,
-  });
+  try {
+    const result = await apolloClient.mutate<UpdateAnnouncementMutationResult>({
+      mutation: UPDATE_ANNOUNCEMENT_MUTATION,
+      variables: input,
+    });
 
-  if (result.error) {
-    throw new Error(result.error.message);
+    if (!result.data) {
+      throw new Error('Failed to update announcement: No data returned');
+    }
+
+    apolloClient.cache.evict({ fieldName: 'announcements' });
+    apolloClient.cache.evict({ id: `Announcement:${input.id}` });
+    apolloClient.cache.gc();
+
+    return result.data.updateAnnouncement;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Failed to update announcement:', error.message);
+      throw error;
+    }
+    throw new Error('Failed to update announcement: Unknown error');
   }
-
-  if (!result.data) {
-    throw new Error('Failed to update announcement: No data returned');
-  }
-
-  await apolloClient.cache.evict({ fieldName: 'announcements' });
-  await apolloClient.cache.evict({ id: `Announcement:${input.id}` });
-  await apolloClient.cache.gc();
-
-  return result.data.updateAnnouncement;
 };
 
 export const deleteAnnouncement = async (id: string): Promise<boolean> => {
-  const result = await apolloClient.mutate<DeleteAnnouncementMutationResult>({
-    mutation: DELETE_ANNOUNCEMENT_MUTATION,
-    variables: { id },
-  });
+  try {
+    const result = await apolloClient.mutate<DeleteAnnouncementMutationResult>({
+      mutation: DELETE_ANNOUNCEMENT_MUTATION,
+      variables: { id },
+    });
 
-  if (result.error) {
-    throw new Error(result.error.message);
+    if (!result.data) {
+      throw new Error('Failed to delete announcement: No data returned');
+    }
+
+    apolloClient.cache.evict({ fieldName: 'announcements' });
+    apolloClient.cache.evict({ id: `Announcement:${id}` });
+    apolloClient.cache.gc();
+
+    return result.data.deleteAnnouncement.success;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Failed to delete announcement:', error.message);
+      throw error;
+    }
+    throw new Error('Failed to delete announcement: Unknown error');
   }
-
-  if (!result.data) {
-    throw new Error('Failed to delete announcement: No data returned');
-  }
-
-  await apolloClient.cache.evict({ fieldName: 'announcements' });
-  await apolloClient.cache.evict({ id: `Announcement:${id}` });
-  await apolloClient.cache.gc();
-
-  return result.data.deleteAnnouncement.success;
 };
